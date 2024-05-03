@@ -8,7 +8,7 @@ const appSetup = async (app: Express) => {
     console.log("Databases connected successfully!");
     const PORT = Number(process.env.PORT) || 3000;
 
-    app.listen(PORT, () => {
+    return app.listen(PORT, () => {
       console.log(`Server started on port ${PORT}`);
     });
   } catch (error: unknown) {

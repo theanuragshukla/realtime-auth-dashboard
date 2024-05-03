@@ -16,6 +16,8 @@ export default async function typeORMConnect(): Promise<void> {
   typeORMDB = await dataSource.initialize();
 }
 
+export const getDataSource = (): DataSource => typeORMDB
+
 export function useTypeORM(
   entity: EntityTarget<ObjectLiteral>
 ): Repository<ObjectLiteral> {
