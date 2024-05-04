@@ -1,6 +1,7 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import { Express } from "express";
+import { allowCors } from "../middlewares/allowCors";
 
 const securitySetup = (app: Express, express: any) =>
   app
@@ -13,6 +14,7 @@ const securitySetup = (app: Express, express: any) =>
         credentials: true,
       })
     )
+    .use(allowCors)
     .use(express.json())
     .use(express.urlencoded({ extended: true }))
     .use(cookieParser());
