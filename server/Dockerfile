@@ -17,6 +17,7 @@ ENV MAILER_PASSWORD $MAILER_PASSWORD
 WORKDIR /app
 
 COPY package*.json .
+npm i -g typescript
 RUN npm ci
 
 COPY . .

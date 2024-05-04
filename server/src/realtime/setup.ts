@@ -9,7 +9,10 @@ class SocketServer {
   private constructor(server: any) {
     this.io = new Server(server, {
       cors: {
-        origin: "http://localhost:3000",
+        origin: [
+          "http://localhost:3000",
+          process.env.CLIENT_URL || "http://localhost:3000",
+        ],
         credentials: true,
       },
     });
@@ -37,11 +40,11 @@ class SocketServer {
     });
 
     this.io.on("connection", (socket) => {
-      const forUid = socket.handshake.query.forUid
-      const isAdmin = socket.user.role === ROLE.ADMIN
+      const forUid = socket.handshake.query.forUid;
+      const isAdmin = socket.user.role === ROLE.ADMIN;
       console.log(`${socket.user.uid} connected`);
       if (isAdmin && !!forUid) socket.join(forUid);
-      else socket.join(socket.user.uid)
+      else socket.join(socket.user.uid);
       socket.emit("system", "Connected to Realtime Server");
       socket.on("disconnect", () => {
         console.log(`${socket.user.uid} disconnected`);

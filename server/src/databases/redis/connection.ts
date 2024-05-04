@@ -4,7 +4,7 @@ class RedisClient {
   client: redis.RedisClientType;
   constructor() {
     this.client = redis.createClient({
-      url: "redis://localhost:6379",
+      url: process.env.REDIS_URI || "redis://localhost:6379",
     });
     this.client
       .connect()
