@@ -21,6 +21,13 @@ const eventConsumer = async (io: any) => {
           );
           return;
         }
+        if (key.startsWith("ipban")) {
+          const [ip, uid] = key.split(":").slice(1);
+          console.log(`Banned IP: ${ip} for user: ${uid}`);
+          pub.set(uid, "banned");
+          pub.expire(key, 60 * 60 * 2);
+          return;
+        }
         const data = JSON.parse(msg) as ActivityEntity;
         io.to(["admin", data.uid]).emit("event", {
           uid: data.uid,

@@ -25,6 +25,7 @@ import { ACTIVITY_TYPE, Log, User } from "../utils/types";
 import { useRouter } from "next/navigation";
 import LiveMonitoring from "../components/common/LiveMonitoring";
 import UserActivity from "../components/common/UserActivity";
+import Blur from "../components/common/Blur";
 
 export default function Admin() {
   const [pages, setPages] = useState(0);
@@ -98,7 +99,7 @@ export default function Admin() {
     fetchUsers();
   }, []);
   return (
-    <Box px={{ base: 4, md: 8 }} pb={32} pt={16}>
+    <Box pos="relative" px={{ base: 4, md: 8 }} pb={32} pt={16}>
       <VStack align="center" gap={4} pt={8} w="auto" mx="auto">
         <Center>
           <Icon as={ProfileCircle} boxSize={20} color="pink.600" />
@@ -128,6 +129,12 @@ export default function Admin() {
           </VStack>
         </Box>
       </VStack>
+      <Blur
+        position={"absolute"}
+        top={-10}
+        left={-10}
+        style={{ filter: "blur(70px)" }}
+      />
     </Box>
   );
 }

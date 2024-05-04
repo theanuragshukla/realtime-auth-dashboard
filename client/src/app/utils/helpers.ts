@@ -62,20 +62,20 @@ export const getMessageFromAction = (action: ACTIVITY_TYPE) => {
 export const getColorFromAction = (action: ACTIVITY_TYPE) => {
   switch (action) {
     case ACTIVITY_TYPE.LOGIN_SUCCESS:
-      return "green.100";
+      return "green";
     case ACTIVITY_TYPE.LOGIN_FAILED:
-      return "red.100";
+      return "red";
     case ACTIVITY_TYPE.LOGOUT:
-      return "blue.100";
+      return "blue";
     case ACTIVITY_TYPE.REGISTER:
-      return "purple.100";
+      return "purple";
     case ACTIVITY_TYPE.TFA_INIT:
-      return "yellow.100";
+      return "yellow";
     case ACTIVITY_TYPE.TFA_VERIFIED:
-      return "green.100";
+      return "green";
     case ACTIVITY_TYPE.TFA_FAILED:
-      return "red.100";
+      return "red";
     default:
-      return "gray.100";
+      return "gray";
   }
 };

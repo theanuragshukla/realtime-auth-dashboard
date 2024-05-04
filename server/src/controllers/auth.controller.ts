@@ -1,23 +1,26 @@
 import { Router, Request, Response } from "express";
+import bcrypt from "bcryptjs";
+
 import { getDataSource, useTypeORM } from "../databases/postgres/typeorm";
 import { UserEntity } from "../databases/postgres/entity/user.entity";
-import bcrypt from "bcryptjs";
+import { UserSessionsEntity } from "../databases/postgres/entity/userSessions.entity";
+import { SessionsEntity } from "../databases/postgres/entity/sessions.entity";
+import Redis from "../databases/redis/connection";
+import { resolveToken } from "../middlewares/resolveToken";
+import { updateSession } from "../middlewares/updateSession";
+
+import { addActivity } from "../utils/ActivityHelper";
 import { ACTIVITY_TYPE, SALT_ROUNDS } from "../constants";
 import {
   generateString,
   generateToken,
   getSeed,
+  publishIPBan,
   publishMail,
   redactEmail,
   sendOTP,
   setCookie,
-  updateSession,
 } from "../utils/helpers";
-import { UserSessionsEntity } from "../databases/postgres/entity/userSessions.entity";
-import { SessionsEntity } from "../databases/postgres/entity/sessions.entity";
-import { resolveToken } from "../utils/helpers";
-import Redis from "../databases/redis/connection";
-import { addActivity } from "../utils/ActivityHelper";
 
 const controller = Router();
 const redis = Redis.getInstance();
@@ -148,6 +151,13 @@ controller
           uid: user.uid,
         });
         if (tmpSession) {
+          if (tmpSession.failed_attempts >= 3) {
+            publishIPBan(tmpSession.device_details.ip, req.deviceId);
+            return res.json({
+              status: false,
+              msg: "Too many failed attempts! Try again after 2 hours! ",
+            });
+          }
           useTypeORM(SessionsEntity).increment(
             { seed: req.deviceId },
             "failed_attempts",

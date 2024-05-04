@@ -10,7 +10,8 @@ import {
   Text, 
   Button, 
   Divider, 
-  Spacer 
+  Spacer, 
+  useColorModeValue
   } from "@chakra-ui/react";
 import { Clock, Hashtag, InfoCircle, Key, Location, Mobile } from "iconsax-react";
 
@@ -23,6 +24,7 @@ export const DeviceCard = ({
   onSignOut: ()=>void;
   onClick: ()=>void;
 }) => {
+const iconColor = useColorModeValue("blue.600", "pink")
   const { device_details } = device;
   const device_name = `${device_details.browser || ""} ${
     device_details.os || ""
@@ -31,7 +33,7 @@ export const DeviceCard = ({
     <Card size="md" boxShadow="md">
       <CardHeader py={4}>
         <HStack justify="space-between" gap={4} align="center">
-          <Icon as={Mobile} boxSize={6} color="blue.500" />
+          <Icon as={Mobile} boxSize={6} color={iconColor} />
           <Heading size="md">
             {device_name.trim().length ? device_name : "Unknown device"}
           </Heading>
@@ -40,7 +42,7 @@ export const DeviceCard = ({
             variant="outline"
             size="xs"
             colorScheme={
-              device.isCurrent ? "blue" : device.status ? "red" : "grey"
+              device.isCurrent ? iconColor : device.status ? "red" : "grey"
             }
             isDisabled={device.isCurrent || !device.status}
             onClick={onSignOut}
@@ -56,24 +58,24 @@ export const DeviceCard = ({
       </CardHeader>
       <CardBody pt={4} pb={8}>
         <HStack gap={2} align="center" wrap="wrap">
-          <Icon as={Key} color="blue" boxSize={4} />
+          <Icon as={Key} color={iconColor} boxSize={4} />
           <Text overflow="hidden" wordBreak="break-all">
             Device ID: {device.seed.toUpperCase() || "Unknown"}
           </Text>
-          <Icon as={InfoCircle} boxSize={4} color="blue" onClick={onClick} />
+          <Icon as={InfoCircle} boxSize={4} color={iconColor} onClick={onClick} />
         </HStack>
         <HStack gap={2} align="center" wrap="wrap">
-          <Icon as={Hashtag} color="blue" boxSize={4} />
+          <Icon as={Hashtag} color={iconColor} boxSize={4} />
           <Text overflow="hidden" wordBreak="break-all">
             IP: {reduceIpv6(device_details.ipAddress || "Unknown")}
           </Text>
         </HStack>
         <HStack gap={2} align="center" wrap="wrap" overflow="hidden">
-          <Icon as={Clock} color="blue" boxSize={4} />
+          <Icon as={Clock} color={iconColor} boxSize={4} />
           <Text>Last active: {parseDate(device.last_active) || "Unknown"}</Text>
         </HStack>
         <HStack gap={2} align="center">
-          <Icon as={Location} color="blue" boxSize={4} />
+          <Icon as={Location} color={iconColor} boxSize={4} />
           <Text>
             {" "}
             Location:{" "}

@@ -21,6 +21,7 @@ import DeviceInfoModal from "../components/common/DeviceInfoModal";
 import LiveMonitoring from "../components/common/LiveMonitoring";
 import { useSearchParams } from "next/navigation";
 import UserActivity from "../components/common/UserActivity";
+import Blur from "../components/common/Blur";
 
 export default function Dashboard() {
   const searchParams = useSearchParams();
@@ -104,7 +105,7 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <Box px={{ base: 4, md: 8 }} pb={32} pt={16}>
+    <Box pos="relative" px={{ base: 4, md: 8 }} pb={32} pt={16}>
       <VStack align="center" gap={8} pt={8} maxW="800px" mx="auto">
         <Icon as={MdSecurity} boxSize={24} color="pink.500" />
         <Heading size="lg">Manage Access and Devices</Heading>
@@ -154,6 +155,12 @@ export default function Dashboard() {
         isOpen={deviceDetailsPopup.isOpen}
         onClose={deviceDetailsPopup.onClose}
         log={currentDevice}
+      />
+      <Blur
+        position={"absolute"}
+        top={-10}
+        left={-10}
+        style={{ filter: "blur(70px)" }}
       />
     </Box>
   );

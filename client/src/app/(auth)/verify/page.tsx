@@ -1,8 +1,9 @@
 "use client";
 
+import Blur from "@/app/components/common/Blur";
 import { APIData } from "@/data/dto/login.dto";
 import { verifyOtp } from "@/data/managers/auth";
-import { Center, Heading, useToast } from "@chakra-ui/react";
+import { Box, Center, Heading, useToast } from "@chakra-ui/react";
 import {
   Button,
   FormControl,
@@ -53,7 +54,7 @@ export default function VerifyEmailForm() {
       minH={"100vh"}
       align={"center"}
       justify={"center"}
-      bg={useColorModeValue("gray.50", "gray.800")}
+      position="relative"
     >
       <Stack
         spacing={4}
@@ -64,6 +65,7 @@ export default function VerifyEmailForm() {
         boxShadow={"lg"}
         p={8}
         my={10}
+        position="relative"
       >
         <Center>
           <Heading lineHeight={1.1} fontSize={{ base: "2xl", md: "3xl" }}>
@@ -110,6 +112,12 @@ export default function VerifyEmailForm() {
           </Button>
         </Stack>
       </Stack>
+      <Blur
+        position={"absolute"}
+        top={-10}
+        left={-10}
+        style={{ filter: "blur(70px)" }}
+      />
     </Flex>
   );
 }
