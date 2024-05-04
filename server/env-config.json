@@ -1,0 +1,5 @@
+{
+  "id": "0cf88c3b-3c32-4249-a646-cd24d71aceaa",
+  "name": "auth-dash",
+  "env_location": "./.env"
+}

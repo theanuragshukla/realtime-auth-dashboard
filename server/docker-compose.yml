@@ -1,0 +1,30 @@
+version: '3'
+services:
+  server:
+    container_name: 'realtime-dash-server'
+    depends_on:
+      - db
+    links:
+      - db
+    build:
+      args:
+        PORT: 8000
+        POSTGRES_URI: postgres://authdash:authdashpass@db:5432/auth-dash
+        JWT_SECRET: ${JWT_SECRET}
+        MAILER_USERNAME: ${MAILER_USERNAME}
+        MAILER_PASSWORD: ${MAILER_PASSWORD}
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - 9877:8000
+
+  db:
+    image: postgres:14-alpine
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: authdashpass
+      POSTGRES_USER: authdash
+      POSTGRES_DB: auth-dash
+
+
