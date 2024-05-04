@@ -222,7 +222,7 @@ export default function JoinOurTeam() {
               lineHeight={1.1}
               fontSize={{ base: "2xl", sm: "3xl", md: "4xl" }}
             >
-              Let's get started
+              Let&apos;s get started
               <Text
                 as={"span"}
                 bgGradient="linear(to-r, red.400,pink.400)"
