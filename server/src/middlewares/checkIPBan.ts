@@ -9,7 +9,7 @@ export const checkIPBan = async (
   const redis = Redis.getInstance();
   const { deviceId } = req;
   if (!deviceId) return res.json({ status: false, msg: "Unauthorized" });
-  if (await redis.get(deviceId))
+  if (await redis.get(`ban:${deviceId}`))
     return res.json({ status: false, msg: "IP Banned" });
   next();
 };

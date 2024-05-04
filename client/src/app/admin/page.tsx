@@ -26,6 +26,7 @@ import { useRouter } from "next/navigation";
 import LiveMonitoring from "../components/common/LiveMonitoring";
 import UserActivity from "../components/common/UserActivity";
 import Blur from "../components/common/Blur";
+import ProtectedRoute from "../layouts/ProtectedRoute";
 
 export default function Admin() {
   const [pages, setPages] = useState(0);
@@ -99,42 +100,45 @@ export default function Admin() {
     fetchUsers();
   }, []);
   return (
-    <Box pos="relative" px={{ base: 4, md: 8 }} pb={32} pt={16}>
-      <VStack align="center" gap={4} pt={8} w="auto" mx="auto">
-        <Center>
-          <Icon as={ProfileCircle} boxSize={20} color="pink.600" />
-        </Center>
-        <Heading> Admin Panel </Heading>
-        <Text>
-          Manage all the user account and their sessions. Feels like superpower.
-        </Text>
-        <Show above="md">
-          <UsersTable users={users} handleDelete={deleteUser} />
-        </Show>
-        <Show below="md">
-          <UsersList users={users} handleDelete={deleteUser} />
-        </Show>
-        {ttlPages > pages && <Button isLoading={loading}> Load more </Button>}
-        <Box w="100%">
-          <VStack maxW="800px" gap={4} mx="auto">
-            <LiveMonitoring room="admin" onEvent={liveUpdate} />
-            <UserActivity
-              isAdmin
-              showUid
-              logs={logs}
-              setLogs={(data: Log[]) => {
-                setLogs((prev) => [...prev, ...data]);
-              }}
-            />
-          </VStack>
-        </Box>
-      </VStack>
-      <Blur
-        position={"absolute"}
-        top={-10}
-        left={-10}
-        style={{ filter: "blur(70px)" }}
-      />
-    </Box>
+    <ProtectedRoute>
+      <Box pos="relative" px={{ base: 4, md: 8 }} pb={32} pt={16}>
+        <VStack align="center" gap={4} pt={8} w="auto" mx="auto">
+          <Center>
+            <Icon as={ProfileCircle} boxSize={20} color="pink.600" />
+          </Center>
+          <Heading> Admin Panel </Heading>
+          <Text>
+            Manage all the user account and their sessions. Feels like
+            superpower.
+          </Text>
+          <Show above="md">
+            <UsersTable users={users} handleDelete={deleteUser} />
+          </Show>
+          <Show below="md">
+            <UsersList users={users} handleDelete={deleteUser} />
+          </Show>
+          {ttlPages > pages && <Button isLoading={loading}> Load more </Button>}
+          <Box w="100%">
+            <VStack maxW="800px" gap={4} mx="auto">
+              <LiveMonitoring room="admin" onEvent={liveUpdate} />
+              <UserActivity
+                isAdmin
+                showUid
+                logs={logs}
+                setLogs={(data: Log[]) => {
+                  setLogs((prev) => [...prev, ...data]);
+                }}
+              />
+            </VStack>
+          </Box>
+        </VStack>
+        <Blur
+          position={"absolute"}
+          top={-10}
+          left={-10}
+          style={{ filter: "blur(70px)" }}
+        />
+      </Box>
+    </ProtectedRoute>
   );
 }

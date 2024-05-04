@@ -25,7 +25,6 @@ import { login } from "@/data/managers/auth";
 import { getVisitorData } from "@/app/utils/visitorAPI";
 import Blur from "@/app/components/common/Blur";
 
-
 export default function Login() {
   const [show, setShow] = useState(false);
   const [data, setData] = useState<LoginDto>({
@@ -58,9 +57,16 @@ export default function Login() {
         router.push("/dashboard");
       }
     } else {
+      console.log(res.data);
       toast({
         title: "Login Failed",
-        description: res.msg,
+        description: `${res.msg}! ${
+          // @ts-ignore
+          res.msg === "Validation failed"
+            ? // @ts-ignore
+              res.data.issues[0].path[0] + " " + res.data.issues[0].message
+            : ""
+        }`,
         duration: 3000,
         isClosable: true,
         status: "error",
@@ -160,7 +166,7 @@ export default function Login() {
             >
               Submit
             </Button>
-            <HStack justify="center" mt={8}>
+            <HStack color="grey" justify="center" mt={8}>
               <Text>Don&apos;t have an Account ? </Text>{" "}
               <Link as={NextLink} href="/signup">
                 Register

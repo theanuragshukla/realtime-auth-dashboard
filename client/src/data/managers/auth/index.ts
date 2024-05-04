@@ -41,3 +41,7 @@ export const verifyOtp = (values: VerifyDto) => {
 export const logout = () => {
   return reqModal(() => getClient().get("/auth/logout"));
 };
+
+export const getprofile = () => {
+  return reqModal(() => getClient().get("/auth/profile"));
+};

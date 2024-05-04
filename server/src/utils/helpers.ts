@@ -7,6 +7,7 @@ import Redis from "../databases/redis/connection";
 
 import { TOKEN_EXPIRY, EVENT_CHANNEL } from "../constants";
 import { CreateMail } from "./types";
+import { AnyZodObject } from "zod";
 
 export const setCookie = ({
   name,
@@ -83,3 +84,17 @@ export const checkRole = (roles: string[]) => {
       });
   };
 };
+export const validate =
+  (schema: AnyZodObject) =>
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await schema.parseAsync(req.body);
+      return next();
+    } catch (error) {
+      return res.json({
+        status: false,
+        msg: "Validation failed",
+        data: error,
+      });
+    }
+  };

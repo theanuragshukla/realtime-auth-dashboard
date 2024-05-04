@@ -14,7 +14,7 @@ export default function Navbar() {
   const router = useRouter()
   return (
     <Flex boxShadow="md" p={4} justify="space-between">
-      <HStack cursor="pointer" align="center" onClick={()=>router.push('/dashboard')}>
+      <HStack cursor="pointer" align="center" onClick={()=>router.push('/')}>
         <Icon as={ProfileCircle} boxSize={10} color="pink.600" />
         <Heading size="md" p={2}>
           Realtime Auth Dash

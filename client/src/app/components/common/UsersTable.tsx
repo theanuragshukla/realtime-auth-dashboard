@@ -7,6 +7,7 @@ import {
   Th,
   Thead,
   Tr,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { MdDelete } from "react-icons/md";
 
@@ -21,6 +22,7 @@ export default function UsersTable({
   handleDelete: (uid: string) => void;
 }) {
   const router = useRouter();
+  const hoverBg = useColorModeValue("gray.100", "whiteAlpha.100")
 
   const handleClick = (uid: string) => {
     router.push(`/dashboard?forUid=${uid}`);
@@ -44,7 +46,7 @@ export default function UsersTable({
             <Tr
               key={user.uid}
               _hover={{
-                bg: "gray.100",
+                bg: hoverBg,
               }}
             >
               <Td>{idx + 1}</Td>

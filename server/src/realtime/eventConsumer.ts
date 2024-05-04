@@ -24,7 +24,8 @@ const eventConsumer = async (io: any) => {
         if (key.startsWith("ipban")) {
           const [ip, uid] = key.split(":").slice(1);
           console.log(`Banned IP: ${ip} for user: ${uid}`);
-          pub.set(uid, "banned");
+          const banKey = `ban:${uid}`
+          pub.set(banKey, "banned");
           pub.expire(key, 60 * 60 * 2);
           return;
         }

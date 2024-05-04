@@ -63,7 +63,13 @@ export default function JoinOurTeam() {
     } else {
       toast({
         title: "Signup Failed",
-        description: res.msg,
+        description: `${res.msg}! ${
+          // @ts-ignore
+          res.msg === "Validation failed"
+            ? // @ts-ignore
+              res.data.issues[0].path[0] + " " + res.data.issues[0].message
+            : ""
+        }`,
         duration: 3000,
         isClosable: true,
         status: "error",
@@ -161,6 +167,7 @@ export default function JoinOurTeam() {
                 </InputRightElement>
               </InputGroup>
               <Checkbox
+                color="grey"
                 colorScheme="pink"
                 isChecked={data.twofactor}
                 onChange={() =>
@@ -184,7 +191,7 @@ export default function JoinOurTeam() {
             >
               Submit
             </Button>
-            <HStack justify="center" mt={8}>
+            <HStack justify="center" color="grey" mt={8}>
               <Text> Already have an Account ? </Text>{" "}
               <Link as={NextLink} href="/login">
                 Login
