@@ -14,13 +14,15 @@ import {
   Icon,
   Text,
 } from "@chakra-ui/react";
-import { Clock, Key } from "iconsax-react";
+import { Clock, Key, Profile } from "iconsax-react";
 import { MdSecurity } from "react-icons/md";
 
 export const LogCard = ({
+  showUid,
   log,
   onClick,
 }: {
+  showUid:boolean;
   log: Log;
   onClick: () => void;
 }) => {
@@ -39,6 +41,14 @@ export const LogCard = ({
         <Divider borderTop="1px solid grey" mt={2} />
       </CardHeader>
       <CardBody pt={0}>
+      {
+        showUid && (
+        <HStack gap={2} align="center">
+          <Icon as={Profile} color="blue" boxSize={4} />
+          <Text> UID: {log.uid.toUpperCase()}</Text>
+        </HStack>
+        )
+      }
         <HStack gap={2} align="center">
           <Icon as={Key} color="blue" boxSize={4} />
           <Text> Device ID: {log.seed.toUpperCase()}</Text>

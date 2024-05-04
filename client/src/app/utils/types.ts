@@ -32,6 +32,7 @@ export enum ACTIVITY_TYPE {
   TFA_FAILED = "2fa_failed",
 }
 export type Log = {
+  uid: string;
   action: ACTIVITY_TYPE;
   timestamp: string;
   seed: string;
@@ -40,4 +41,11 @@ export type Log = {
 export type RTM = {
   status: boolean;
   socket?: Socket;
+};
+
+export type User = {
+  uid: string;
+  name: string;
+  email: string;
+  role: string;
 };

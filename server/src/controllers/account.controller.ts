@@ -2,8 +2,10 @@ import { Router, Request, Response } from "express";
 import { useTypeORM } from "../databases/postgres/typeorm";
 import { SessionsEntity } from "../databases/postgres/entity/sessions.entity";
 import { addActivity } from "../utils/ActivityHelper";
-import { ACTIVITY_TYPE } from "../constants";
+import { ACTIVITY_TYPE, ROLE } from "../constants";
 import { ActivityEntity } from "../databases/postgres/entity/activity.entity";
+import { UserEntity } from "../databases/postgres/entity/user.entity";
+import { checkRole, generateToken, setCookie } from "../utils/helpers";
 
 const controller = Router();
 
@@ -11,16 +13,21 @@ controller
   .get("/recent-devices", async (req: Request, res: Response) => {
     try {
       const page = req.query.page || 1;
-      const { user } = req;
-      const allSessions = await useTypeORM(SessionsEntity).find({
-        where: { session_id: user.session_id },
-        order: { last_active: "DESC" },
-        skip: (Number(page) - 1) * 5,
-        take: 5,
-      });
+      const forUid = req.query.forUid;
+      const { uid, role, seed } = req.user;
+      const allSessions = await useTypeORM(SessionsEntity)
+        .createQueryBuilder("sessions")
+        .select()
+        .where("sessions.uid = :uid", {
+          uid: !!forUid ? (role === ROLE.ADMIN ? forUid : uid) : uid,
+        })
+        .orderBy("sessions.last_active", "DESC")
+        .offset((Number(page) - 1) * 5)
+        .limit(5)
+        .getMany();
       const devices = allSessions.map((session) => {
         return {
-          isCurrent: session.seed === user.seed,
+          isCurrent: session.seed === seed,
           seed: session.seed,
           last_active: session.last_active,
           device_details: session.device_details,
@@ -40,17 +47,55 @@ controller
       });
     }
   })
+  .get(
+    "/all-activities",
+    checkRole([ROLE.ADMIN]),
+    async (req: Request, res: Response) => {
+      try {
+        const page = req.query.page || 1;
+        const allActivities = await useTypeORM(ActivityEntity).find({
+          order: { id: "DESC" },
+          skip: (Number(page) - 1) * 20,
+          take: 20,
+        });
+        const activities = allActivities.map((activity) => {
+          return {
+            uid: activity.uid,
+            seed: activity.seed,
+            action: activity.action,
+            timestamp: activity.timestamp,
+          };
+        });
+        return res.json({
+          status: true,
+          data: activities,
+          msg: "All Activities",
+        });
+      } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+          status: false,
+          msg: "Internal Server Error",
+        });
+      }
+    }
+  )
   .get("/recent-activities", async (req: Request, res: Response) => {
     try {
       const page = req.query.page || 1;
+      const forUid = req.query.forUid;
+      const { uid, role } = req.user;
       const allActivities = await useTypeORM(ActivityEntity).find({
-        where: { uid: req.uid },
-        order: { timestamp: "DESC" },
+        where: {
+          uid: !!forUid ? (role === ROLE.ADMIN ? forUid : uid) : uid,
+        },
+        order: { id: "DESC" },
         skip: (Number(page) - 1) * 20,
         take: 20,
       });
       const activities = allActivities.map((activity) => {
         return {
+          uid: activity.uid,
           seed: activity.seed,
           action: activity.action,
           timestamp: activity.timestamp,
@@ -71,10 +116,12 @@ controller
   })
   .get("/logout-device/:seed", async (req: Request, res: Response) => {
     try {
-      const { user } = req;
+      const forUid = req.query.forUid;
+      const { uid, role } = req.user;
+      const isAdmin = role === ROLE.ADMIN;
       const session = await useTypeORM(SessionsEntity).findOneBy({
         seed: req.params.seed,
-        session_id: user.session_id,
+        uid: !!forUid ? (isAdmin ? forUid : uid) : uid,
       });
       if (!session) {
         return res.status(404).json({
@@ -84,6 +131,7 @@ controller
       }
       session.status = false;
       await useTypeORM(SessionsEntity).save(session);
+      req.user.uid = isAdmin && !!forUid ? (forUid as string) : uid;
       await addActivity(req, ACTIVITY_TYPE.LOGOUT, session.seed);
       return res.json({
         status: true,
@@ -99,10 +147,11 @@ controller
   })
   .get("/device/:seed", async (req: Request, res: Response) => {
     try {
-      const { user } = req;
+      const forUid = req.query.forUid;
+      const { uid, role } = req.user;
       const session = await useTypeORM(SessionsEntity).findOneBy({
         seed: req.params.seed,
-        session_id: user.session_id,
+        uid: !!forUid ? (role === ROLE.ADMIN ? forUid : uid) : uid,
       });
       if (!session) {
         return res.status(404).json({
@@ -124,6 +173,31 @@ controller
       return res.status(500).json({
         status: false,
         msg: "Internal Server Error",
+      });
+    }
+  })
+  .get("/upgrade", async (req: Request, res: Response) => {
+    try {
+      const dbUser = await useTypeORM(UserEntity).findOneBy({
+        uid: req.user.uid,
+      });
+      if (!dbUser)
+        return res.json({
+          status: false,
+          msg: "Unauthorised",
+        });
+      dbUser.role = ROLE.ADMIN;
+      await useTypeORM(UserEntity).save(dbUser);
+      const { token } = generateToken(dbUser as UserEntity, req.user.seed);
+      setCookie({ value: token, res });
+      res.json({
+        status: true,
+        msg: "Account upgraded",
+      });
+    } catch (e: any) {
+      res.json({
+        status: false,
+        msg: "Upgrade failed",
       });
     }
   });

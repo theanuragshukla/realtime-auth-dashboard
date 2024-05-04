@@ -1,6 +1,7 @@
 import { Express, Request, Response } from "express";
 import authController from "../controllers/auth.controller";
 import accountController from "../controllers/account.controller";
+import usersController from "../controllers/users.controller";
 import { addDeviceId, resolveToken, updateSession } from "../utils/helpers";
 
 const routerSetup = (app: Express) => {
@@ -13,6 +14,7 @@ const routerSetup = (app: Express) => {
     .use(resolveToken)
     .use(updateSession)
     .use('/account', accountController)
+    .use('/users', usersController)
 };
 
 export default routerSetup;

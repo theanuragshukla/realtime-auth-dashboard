@@ -1,5 +1,5 @@
 import { camelToTitle, parseDate, pick } from "@/app/utils/helpers";
-import { DeviceDetails } from "@/app/utils/types";
+import { DeviceDetails, Log } from "@/app/utils/types";
 import { getDeviceDetail } from "@/data/managers/account";
 import {
   Modal,
@@ -14,21 +14,28 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { ArrowRight3, Clock, Flash } from "iconsax-react";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function DeviceInfoModal({
-  deviceId,
+  log,
   isOpen,
   onClose,
 }: {
-  deviceId: string;
+  log?: Log;
   isOpen: boolean;
   onClose: () => void;
 }) {
   const [data, setData] = useState<DeviceDetails>();
+  const searchParams = useSearchParams();
+  const forUid = searchParams.get("forUid") || "";
 
   const fetchDeviceData = async () => {
-    const { status, data, msg } = await getDeviceDetail(deviceId);
+    if(!log)return 
+    const { status, data, msg } = await getDeviceDetail({
+      id: log.seed,
+      uid: forUid || log.uid,
+    });
     if (status) {
       setData(data as DeviceDetails);
     } else {
@@ -37,8 +44,8 @@ export default function DeviceInfoModal({
   };
 
   useEffect(() => {
-    if (!!deviceId) fetchDeviceData();
-  }, [deviceId]);
+    if (!!log?.seed) fetchDeviceData();
+  }, [log]);
 
   return (
     <>

@@ -3,14 +3,20 @@ import jwt from "jsonwebtoken";
 import { JWT_PAYLOAD, ROLE } from "../constants";
 
 class SocketServer {
+  private static instance: SocketServer;
   io: Server;
-  constructor(server: any) {
+
+  private constructor(server: any) {
     this.io = new Server(server, {
       cors: {
         origin: "http://localhost:3000",
         credentials: true,
       },
     });
+    this.setupSocketIO();
+  }
+
+  private setupSocketIO() {
     this.io.use((socket: Socket, next) => {
       try {
         const cookies = socket.handshake.headers.cookie?.split("; ");
@@ -29,29 +35,31 @@ class SocketServer {
         return socket.disconnect();
       }
     });
+
     this.io.on("connection", (socket) => {
+      const forUid = socket.handshake.query.forUid
+      const isAdmin = socket.user.role === ROLE.ADMIN
       console.log(`${socket.user.uid} connected`);
-      socket.join(socket.user.uid);
-      if(socket.user.role===ROLE.ADMIN) socket.join("admin")
-      this.io
-        .to(socket.user.uid)
-        .emit("system", "Connected to Realtime Server");
+      if (isAdmin && !!forUid) socket.join(forUid);
+      else socket.join(socket.user.uid)
+      socket.emit("system", "Connected to Realtime Server");
+      socket.on("disconnect", () => {
+        console.log(`${socket.user.uid} disconnected`);
+      });
     });
+  }
+
+  public static getInstance(server: any): SocketServer {
+    if (!SocketServer.instance) {
+      SocketServer.instance = new SocketServer(server);
+    }
+    return SocketServer.instance;
   }
 }
 
 class SocketIO {
-  private static instance: SocketServer;
-
-  constructor(server: any) {
-    if (!SocketIO.instance) {
-      SocketIO.instance = new SocketServer(server);
-    }
-  }
-
   public static getInstance(server: any) {
-    if (!SocketIO.instance) SocketIO.instance = new SocketServer(server);
-    return SocketIO.instance.io;
+    return SocketServer.getInstance(server).io;
   }
 }
 

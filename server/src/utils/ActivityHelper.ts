@@ -7,7 +7,11 @@ import Redis from "../databases/redis/connection";
 
 const redis = Redis.getInstance();
 
-export const addActivity = async (req: Request, action: ACTIVITY_TYPE, customSeed?:string) => {
+export const addActivity = async (
+  req: Request,
+  action: ACTIVITY_TYPE,
+  customSeed?: string
+) => {
   try {
     const seed = customSeed || req.user?.seed;
     if (!seed) {
@@ -15,12 +19,14 @@ export const addActivity = async (req: Request, action: ACTIVITY_TYPE, customSee
       return false;
     }
     const activity = useTypeORM(ActivityEntity).create({
-      uid: req.uid,
+      uid: req.user.uid,
       seed: seed,
       action,
     });
     await useTypeORM(ActivityEntity).save(activity);
-    redis.publish(EVENT_CHANNEL, JSON.stringify(activity));
+    const key = `activity:${seed}`;
+    redis.rPush(key, JSON.stringify(activity));
+    redis.publish(EVENT_CHANNEL, key);
   } catch (error) {
     console.error(error);
     return false;
@@ -37,4 +43,3 @@ export const addAnonymousActivity = async (
   }) as SessionsEntity;
   await addActivity(req, action);
 };
-

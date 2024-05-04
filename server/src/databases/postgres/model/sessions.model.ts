@@ -6,6 +6,7 @@ export interface IUserSessions {
 
 export interface ISession {
   id: number;
+  uid: string;
   seed: string;
   device_details: string,
   last_active: Date;

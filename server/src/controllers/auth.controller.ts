@@ -7,7 +7,9 @@ import {
   generateString,
   generateToken,
   getSeed,
+  publishMail,
   redactEmail,
+  sendOTP,
   setCookie,
   updateSession,
 } from "../utils/helpers";
@@ -57,25 +59,26 @@ controller
         seeds: [seed],
       });
 
-      const getSession = (id: number) =>
-        useTypeORM(SessionsEntity).create({
-          session_id: id,
-          seed,
-          device_details,
-        });
+      const tmpSession = useTypeORM(SessionsEntity).create({
+        uid,
+        seed,
+        device_details,
+      });
 
       await getDataSource().transaction(async (manager) => {
         await manager.getRepository(UserEntity).save(user);
-        const sessions = await manager
-          .getRepository(UserSessionsEntity)
-          .save(loginInstance);
+        await manager.getRepository(UserSessionsEntity).save(loginInstance);
         const session = await manager
           .getRepository(SessionsEntity)
-          .save(getSession(sessions.id));
-        req.uid = uid;
+          .save(tmpSession);
         req.user = session;
       });
       await addActivity(req, ACTIVITY_TYPE.REGISTER);
+      publishMail({
+        to: email,
+        action: ACTIVITY_TYPE.REGISTER,
+        user: user as UserEntity,
+      });
       if (twofactor) {
         await addActivity(req, ACTIVITY_TYPE.TFA_INIT);
         const urlParams = {
@@ -83,13 +86,13 @@ controller
           email: redactEmail(user.email),
         };
         const otp = getSeed(6);
-        // TODO: send otp on mail
         await redis.hSet(seed, {
           uid: user.uid,
           otp,
           retries: 3,
         });
         redis.expire(seed, 600);
+        sendOTP(email, otp);
         return res.status(200).json({
           status: true,
           msg: "OTP sent successfully!",
@@ -125,14 +128,13 @@ controller
           msg: "Invalid email or password!",
         });
       }
-      req.uid = user.uid;
-
       const loginInstance = (await useTypeORM(UserSessionsEntity).findOneBy({
         uid: user.uid,
       })) as UserSessionsEntity;
 
       const session = (seed?: string) =>
         useTypeORM(SessionsEntity).create({
+          uid: user.uid,
           session_id: loginInstance.id,
           seed: seed || getSeed(),
           device_details,
@@ -143,6 +145,7 @@ controller
       if (!isPasswordMatch) {
         let tmpSession = await useTypeORM(SessionsEntity).findOneBy({
           seed: req.deviceId,
+          uid: user.uid,
         });
         if (tmpSession) {
           useTypeORM(SessionsEntity).increment(
@@ -157,6 +160,11 @@ controller
         }
         req.user = tmpSession as SessionsEntity;
         await addActivity(req, ACTIVITY_TYPE.LOGIN_FAILED);
+        publishMail({
+          to: email,
+          action: ACTIVITY_TYPE.LOGIN_FAILED,
+          user: user as UserEntity,
+        });
         return res.json({
           status: false,
           msg: "Invalid email or password!",
@@ -173,6 +181,11 @@ controller
       });
 
       await addActivity(req, ACTIVITY_TYPE.LOGIN_SUCCESS);
+      publishMail({
+        to: email,
+        action: ACTIVITY_TYPE.LOGIN_SUCCESS,
+        user: user as UserEntity,
+      });
 
       if (user.twofactor) {
         await addActivity(req, ACTIVITY_TYPE.TFA_INIT);
@@ -181,13 +194,13 @@ controller
           email: redactEmail(user.email),
         };
         const otp = getSeed(6);
-        // TODO: send otp on mail
         await redis.hSet(seed, {
           uid: user.uid,
           otp,
           retries: 3,
         });
         redis.expire(seed, 600);
+        sendOTP(email, otp);
         return res.status(200).json({
           status: true,
           msg: "OTP sent successfully!",
@@ -221,9 +234,9 @@ controller
       }
       const { uid, retries } = data;
 
-      req.uid = uid;
       req.user = useTypeORM(SessionsEntity).create({
         seed: id,
+        uid: uid,
       }) as SessionsEntity;
 
       if (Number(retries) <= 1) {
@@ -273,10 +286,18 @@ controller
   .get("/logout", async (req: Request, res: Response) => {
     try {
       const session = req.user;
+      const user = (await useTypeORM(UserEntity).findOneBy({
+        uid: session.uid,
+      })) as UserEntity;
       session.last_active = new Date();
       session.status = false;
       await useTypeORM(SessionsEntity).save(session);
       await addActivity(req, ACTIVITY_TYPE.LOGOUT);
+      publishMail({
+        to: user.email,
+        action: ACTIVITY_TYPE.LOGOUT,
+        user: user,
+      });
       res.json({
         status: true,
         msg: "User logged out successfully!",

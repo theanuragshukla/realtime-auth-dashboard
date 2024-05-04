@@ -1,9 +1,9 @@
-import { SessionsEntity } from "../../databases/postgres/entity/sessions.entity";
+import { UserSession } from "../../utils/types";
 
 declare global {
   namespace Express {
     interface Request {
-      user: SessionsEntity;
+      user: UserSession;
       uid?: string;
       deviceId: string;
     }

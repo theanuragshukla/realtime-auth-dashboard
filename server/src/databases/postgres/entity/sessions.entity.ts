@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from "typeorm";
 import { ISession } from "../model/sessions.model";
 import { UserSessionsEntity } from "./userSessions.entity";
+import { UserEntity } from "./user.entity";
 
 @Entity("sessions")
 export class SessionsEntity implements ISession {
@@ -9,12 +10,16 @@ export class SessionsEntity implements ISession {
   @Column({
     type: "int",
   })
-  @ManyToOne(() => UserSessionsEntity, (sessions) => sessions.id, {
-    onDelete: "CASCADE",
-  })
-  session_id: number;
   @Column({ length: 16, unique: true })
   seed: string;
+  
+
+  @ManyToOne(() => UserEntity, (user) => user.uid, {
+    onDelete: "CASCADE",
+  })
+  @Column({ length: 16 })
+  uid: string;
+
   @Column({
     type: "json",
     default: {},
