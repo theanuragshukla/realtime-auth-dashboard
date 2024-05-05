@@ -47,4 +47,5 @@ This is simple PoC design for Realtime account monitoring using Socket.io in Nod
   - Postgres (Persistent User + device data)
   - Redis (IP ban, OTPs, logs, events, pub/sub, etc)
 # Architecture
+![image](https://github.com/theanuragshukla/realtime-auth-dashboard/assets/71091279/a62bc000-9833-44da-8b70-f6a16bef3051)
 
