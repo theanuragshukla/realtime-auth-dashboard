@@ -1,6 +1,10 @@
 # Realtime Auth Dashboard
 This is simple PoC design for Realtime account monitoring using Socket.io in Nodejs.
 
+# Deployments
+- Client: [`https://realtime-auth-dashboard.vercel.app`](https://realtime-auth-dashboard.vercel.app)
+- Server: [`https://authdash.anurags.tech/`](https://authdash.anurags.tech/)
+
 # Features
 - User Authentication (email + pass)
 - RBAC (user, admin)
@@ -34,13 +38,13 @@ This is simple PoC design for Realtime account monitoring using Socket.io in Nod
   - ExpressJS (Web Server)
   - bcryptJS (Password hashing)
   - jsonwebtoken (signing auth tokens)
-  - nodemailer (SNTP client for sending Emails)
+  - nodemailer (SMTP client for sending Emails)
   - socket.io (socket server)
   - zod (schema validation)
   - redis (redis client)
   - pg (postgres client)
   - typeorm (Database ORM)
-  - envoix (Env management) (I built this)
+  - envoix (Env management) [[theanuragshukla/envoix](https://github.com/theanuragshukla/envoix)]
   - Docker + Docker compose (containerisation + deployment)
   - Azure (Cloud VM)
 - Database
@@ -49,3 +53,20 @@ This is simple PoC design for Realtime account monitoring using Socket.io in Nod
 # Architecture
 ![image](https://github.com/theanuragshukla/realtime-auth-dashboard/assets/71091279/a62bc000-9833-44da-8b70-f6a16bef3051)
 
+### Server Routes
+- /auth - [`NO AUTH`]
+  - `POST` /login 
+  - `POST` /register
+  - `POST` /verify
+  - `GET` /profile
+- /account - [`USER` + `ADMIN`]
+  - `GET` /recent-devices
+  - `GET` /recent-activities
+  - `GET` /all-activities
+  - `GET` /logout-device/:deviceId
+  - `GET` /device/:deviceId
+  - `GET` /upgrade
+- /users - [`ADMIN`]
+  - `GET` /all
+  - `GET` /:uid
+  - `DELETE` /:uid
