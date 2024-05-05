@@ -53,7 +53,7 @@ This is simple PoC design for Realtime account monitoring using Socket.io in Nod
 # Architecture
 ![image](https://github.com/theanuragshukla/realtime-auth-dashboard/assets/71091279/a62bc000-9833-44da-8b70-f6a16bef3051)
 
-### Server Routes
+### REST API Routes ([READ MORE ABOUT ROUTES](./server/src/controllers/README.md))
 - /auth - [`NO AUTH`]
   - `POST` /login 
   - `POST` /register
@@ -70,3 +70,34 @@ This is simple PoC design for Realtime account monitoring using Socket.io in Nod
   - `GET` /all
   - `GET` /:uid
   - `DELETE` /:uid
+
+### REALTIME SYSTEM
+- Server: `Socket.io`
+- Authentication: AuthToken via cookies (http-only)
+
+#### Working 
+- After User connects, If Authorised, gets added to their Unique room, where all their activities are broadcasted
+- ADMIN can specify `forUID` in `handshake.query`, to join any users room or set it to admin for global events/logs
+- every activity is broadcasted to two rooms
+  1. User' room (UID)
+  2. Admin channel (global)
+- Activities are added broadcasted by [`REDIS CONSUMER`](#redis)
+
+### REDIS
+- Their are two redis instances running
+  1. PUB: Publishes all activites to redisDB
+  2. SUB: Consumes activities and takes actions accordingly
+- Actions:
+  1. OTP
+  - saves the users OPT for 2FA (Expire time: 10min)
+  2. BAN
+  - Saves User's IP as banned (Expire time: 2hrs)
+  3. LOG
+  - sends new logs through admin and user channels
+
+### MAILER
+- Service: `nodemailer`
+- Sends email to users
+
+# Author
+developed by [`Anurag Shukla`](https://github.com/theanuragshukla)
