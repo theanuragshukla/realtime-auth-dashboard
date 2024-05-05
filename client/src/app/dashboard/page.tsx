@@ -11,6 +11,7 @@ import {
   Text,
   VStack,
   useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { MdSecurity } from "react-icons/md";
@@ -36,17 +37,29 @@ export default function Dashboard() {
   const [deviceId, setDeviceId] = useState("");
   const [currentDevice, setCurrentDevice] = useState<Log>();
   const forUid = searchParams.get("forUid") || "";
-  const router = useRouter()
+  const router = useRouter();
+  const toast = useToast();
 
-  const signOutDevice = async (seed: string) => {
+  const signOutDevice = async (seed?: string) => {
+    if (!seed) seed = devices.find((device) => device.isCurrent)?.seed;
+    if (!seed) return;
     const { status, msg } = await logoutDevice({
       id: seed,
       uid: forUid,
     });
     if (status) {
+      toast({
+        title: "Device signed out successfully",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
       setDevices((prev) =>
         prev.map((device) => {
           if (device.seed === seed) {
+            if (device.isCurrent) {
+              router.push("/login");
+            }
             return { ...device, status: false };
           }
           return device;
@@ -119,8 +132,19 @@ export default function Dashboard() {
             you don't recognize a device, you should sign out of it.
           </Text>
           <HStack>
-            <Button onClick={()=>router.push("/admin")}> Admin panel </Button>
-            <Button onClick={()=>router.push('/upgrade')}> Upgrade Account </Button>
+            <Button onClick={() => router.push("/admin")}> Admin panel </Button>
+            <Button onClick={() => router.push("/upgrade")}>
+              Upgrade Account{" "}
+            </Button>
+            <Button
+              onClick={() => {
+                signOutDevice();
+              }}
+              colorScheme="red"
+            >
+              {" "}
+              Logout{" "}
+            </Button>
           </HStack>
           <LiveMonitoring onEvent={liveUpdate} />
           <Heading size="md">Recent Devices</Heading>
